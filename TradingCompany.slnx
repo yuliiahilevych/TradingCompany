@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="StoreDAL.EF/StoreDAL.EF.csproj" Id="59430680-ac3a-4926-b984-c379f5bb37ff" />
+  <Project Path="StoreDAL.Tests/StoreDAL.Tests.csproj" Id="fe89a0ab-f0f9-4c3f-b5f0-c71a687e65c8" />
+  <Project Path="StoreDB.WPF/Store.WPF.csproj" Id="a982ae20-f82a-4219-a045-c8077f13d1f9" />
+  <Project Path="StoreDTO/StoreDTO.csproj" />
+  <Project Path="TradingCompany/StoreConsole.csproj" />
+</Solution>
