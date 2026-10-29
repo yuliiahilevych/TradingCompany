@@ -71,6 +71,6 @@ namespace StoreConsole.Menus
                 Console.Write("Press Enter to continue...");
                 Console.ReadLine();
             }
-        }
+        }   
     }
 }

@@ -5,7 +5,7 @@ using NUnit.Framework;
 using StoreDAL.EF.DAL;
 using StoreDAL.EF.Data;
 using StoreDAL.EF.Entities;
-using StoreDAL.Interfaces;
+using StoreDAL.EF.Interfaces;
 using StoreDTO;
 
 namespace StoreDAL.Tests
@@ -64,7 +64,7 @@ namespace StoreDAL.Tests
 
 
         [Test]
-        public void Create_WithoutDate_ReturnsRecordWithIdAndCurrentDate()
+        public void Create_ValidRecord_ReturnsRecordWithId()
         {
             var created = AddRecord();
 
@@ -73,7 +73,6 @@ namespace StoreDAL.Tests
                 Assert.That(created.PriceHistoryId, Is.GreaterThan(0));
                 Assert.That(created.ProductId, Is.EqualTo(_productId));
                 Assert.That(created.NewSellingPrice, Is.EqualTo(199m));
-                Assert.That(created.ChangedAt, Is.EqualTo(DateTime.Now).Within(TimeSpan.FromMinutes(1)));
             });
         }
 

@@ -16,7 +16,7 @@ public partial class tblPriceHistory
 
     public decimal NewSellingPrice { get; set; }
 
-    public DateTime ChangedAt { get; set; }
+    public DateTime RowInsertTime { get; set; }
 
     public virtual tblProduct Product { get; set; } = null!;
 }

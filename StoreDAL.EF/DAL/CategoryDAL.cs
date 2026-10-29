@@ -1,58 +1,65 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using StoreDAL.EF.Data;
 using StoreDAL.EF.Entities;
-using StoreDAL.Interfaces;
+using StoreDAL.EF.Interfaces;
 using StoreDTO;
 
 namespace StoreDAL.EF.DAL
 {
-    public class CategoryDAL : BaseDAL<tblCategory, CategoryDTO>, ICategoryDAL
+    public class CategoryDAL : BaseDAL<tblCategory>, ICategoryDAL
     {
-        public CategoryDAL(TradingCompanyContext context) : base(context)
+        public CategoryDAL(TradingCompanyContext context) : base(context) { }
+
+        public CategoryDTO Create(CategoryDTO category)
         {
-        }
-
-        protected override int GetId(CategoryDTO dto) => dto.CategoryId;
-
-        protected override IQueryable<tblCategory> ApplyOrder(IQueryable<tblCategory> query)
-            => query.OrderBy(c => c.CategoryId);
-
-        // якщо категорію позначили видаленою, блокуємо всі її товари
-        protected override void BeforeUpdate(tblCategory existing, CategoryDTO newValues)
-        {
-            bool becameDeleted = !existing.IsDeleted && newValues.IsDeleted;
-            if (!becameDeleted) return;
-
-            var products = Context.tblProduct
-                .Where(p => p.CategoryId == existing.CategoryId && !p.IsBlocked)
-                .ToList();
-
-            foreach (var p in products)
+            var entity = new tblCategory
             {
-                p.IsBlocked = true;
-            }
+                CategoryName = category.CategoryName,
+                IsDeleted = category.IsDeleted,
+                Description = category.Description
+            };
+            return ToDto(AddEntity(entity));
         }
 
-        protected override CategoryDTO ToDto(tblCategory e) => new CategoryDTO
+        public List<CategoryDTO> GetAll()
         {
-            CategoryId = e.CategoryId,
-            CategoryName = e.CategoryName,
-            IsDeleted = e.IsDeleted,
-            Description = e.Description
-        };
+            return GetAllEntities().Select(ToDto).ToList();
+        }
 
-        protected override tblCategory ToEntity(CategoryDTO dto) => new tblCategory
+        public CategoryDTO? GetById(int id)
         {
-            CategoryName = dto.CategoryName,
-            IsDeleted = dto.IsDeleted,
-            Description = dto.Description
-        };
+            var entity = FindEntity(id);
+            return entity == null ? null : ToDto(entity);
+        }
 
-        protected override void CopyToEntity(CategoryDTO dto, tblCategory e)
+        public bool Update(CategoryDTO category)
         {
-            e.CategoryName = dto.CategoryName;
-            e.IsDeleted = dto.IsDeleted;
-            e.Description = dto.Description;
+            var entity = FindEntity(category.CategoryId);
+            if (entity == null) return false;
+
+            entity.CategoryName = category.CategoryName;
+            entity.IsDeleted = category.IsDeleted;
+            entity.Description = category.Description;
+            SaveChanges();
+            return true;
+        }
+
+        public bool Delete(int id)
+        {
+            return DeleteEntity(id);
+        }
+
+        private static CategoryDTO ToDto(tblCategory entity)
+        {
+            return new CategoryDTO
+            {
+                CategoryId = entity.CategoryId,
+                CategoryName = entity.CategoryName,
+                IsDeleted = entity.IsDeleted,
+                Description = entity.Description,
+                RowInsertTime = entity.RowInsertTime
+            };
         }
     }
 }

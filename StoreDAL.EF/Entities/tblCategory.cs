@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace StoreDAL.EF.Entities;
 
@@ -11,6 +12,8 @@ public partial class tblCategory
     public bool IsDeleted { get; set; }
 
     public string? Description { get; set; }
+
+    public DateTime RowInsertTime { get; set; }
 
     public virtual ICollection<tblProduct> Products { get; set; } = new List<tblProduct>();
 }

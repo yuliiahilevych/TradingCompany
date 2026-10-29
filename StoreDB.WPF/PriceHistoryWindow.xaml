@@ -1,0 +1,36 @@
+﻿<Window x:Class="StoreDB.WPF.PriceHistoryWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:StoreViewModels.Products;assembly=StoreViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:PriceHistoryViewModel}"
+        Title="{Binding Title}" Height="400" Width="640"
+        WindowStartupLocation="CenterOwner">
+
+    <DockPanel Margin="12">
+        <TextBlock DockPanel.Dock="Top" Text="{Binding Title}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10" />
+
+        <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+            <TextBlock Style="{StaticResource ErrorText}" Text="{Binding ErrorMessage}" />
+            <Button Content="Закрити" IsCancel="True" HorizontalAlignment="Right" Margin="0,6,0,0" />
+        </StackPanel>
+
+        <Grid>
+            <DataGrid ItemsSource="{Binding History}" AutoGenerateColumns="False" IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Дата" Binding="{Binding RowInsertTime, StringFormat=dd.MM.yyyy HH:mm}" />
+                    <DataGridTextColumn Header="Вхідна: було" Binding="{Binding OldPurchasePrice, StringFormat=N2}" />
+                    <DataGridTextColumn Header="Вхідна: стало" Binding="{Binding NewPurchasePrice, StringFormat=N2}" FontWeight="SemiBold" />
+                    <DataGridTextColumn Header="Продаж: було" Binding="{Binding OldSellingPrice, StringFormat=N2}" />
+                    <DataGridTextColumn Header="Продаж: стало" Binding="{Binding NewSellingPrice, StringFormat=N2}" FontWeight="SemiBold" Width="*" />
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <TextBlock Text="Ціну цього товару ще не змінювали."
+                       HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Gray"
+                       Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}}" />
+        </Grid>
+    </DockPanel>
+</Window>

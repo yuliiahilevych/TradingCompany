@@ -10,6 +10,6 @@ namespace StoreDTO
         public decimal NewPurchasePrice { get; set; }
         public decimal OldSellingPrice { get; set; }
         public decimal NewSellingPrice { get; set; }
-        public DateTime ChangedAt { get; set; }
+        public DateTime RowInsertTime { get; set; }
     }
 }

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using StoreDAL.EF.DAL;
 using StoreDAL.EF.Data;
-using StoreDAL.Interfaces;
+using StoreDAL.EF.Interfaces;
 using StoreDTO;
 using StoreConsole.Menus;
 
@@ -210,7 +210,7 @@ namespace StoreConsole
             var product = _productDal.GetById(h.ProductId);
             string productName = product?.ProductName ?? "(product not found)";
 
-            Console.WriteLine($"#{h.PriceHistoryId} | {h.ChangedAt:dd.MM.yyyy HH:mm} | Product {h.ProductId}: {productName}");
+            Console.WriteLine($"#{h.PriceHistoryId} | {h.RowInsertTime:dd.MM.yyyy HH:mm} | Product {h.ProductId}: {productName}");
             Console.WriteLine($"     Purchase price: was {h.OldPurchasePrice:0.00} -> now {h.NewPurchasePrice:0.00}");
             Console.WriteLine($"     Selling price:  was {h.OldSellingPrice:0.00} -> now {h.NewSellingPrice:0.00}");
             Console.WriteLine();

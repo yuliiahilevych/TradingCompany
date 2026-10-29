@@ -5,7 +5,7 @@ using NUnit.Framework;
 using StoreDAL.EF.DAL;
 using StoreDAL.EF.Data;
 using StoreDAL.EF.Entities;
-using StoreDAL.Interfaces;
+using StoreDAL.EF.Interfaces;
 using StoreDTO;
 
 namespace StoreDAL.Tests
@@ -105,32 +105,6 @@ namespace StoreDAL.Tests
                 Assert.That(found.CategoryId, Is.EqualTo(_categoryId));
             });
         }
-
-
-        [TestCase(100.0, 150.0, 120.0, 199.0)]
-        [TestCase(100.0, 150.0, 90.0, 140.0)]
-        [TestCase(100.0, 150.0, 100.0, 175.0)]
-        public void Update_PriceChanged_AddsPriceHistoryRecord(
-            double oldPurchase, double oldSelling, double newPurchase, double newSelling)
-        {
-            var created = AddProduct("LEGO", (decimal)oldPurchase, (decimal)oldSelling);
-            created.PurchasePrice = (decimal)newPurchase;
-            created.SellingPrice = (decimal)newSelling;
-
-            bool result = _dal.Update(created);
-
-            var history = _context.tblPriceHistory.Where(h => h.ProductId == created.ProductId).ToList();
-            Assert.Multiple(() =>
-            {
-                Assert.That(result, Is.True);
-                Assert.That(history, Has.Count.EqualTo(1));
-                Assert.That(history[0].OldPurchasePrice, Is.EqualTo((decimal)oldPurchase));
-                Assert.That(history[0].NewPurchasePrice, Is.EqualTo((decimal)newPurchase));
-                Assert.That(history[0].OldSellingPrice, Is.EqualTo((decimal)oldSelling));
-                Assert.That(history[0].NewSellingPrice, Is.EqualTo((decimal)newSelling));
-            });
-        }
-
 
         [Test]
         public void Delete_ExistingProduct_RemovesIt()

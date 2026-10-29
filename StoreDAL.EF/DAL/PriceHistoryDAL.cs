@@ -1,53 +1,71 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.Linq;
 using StoreDAL.EF.Data;
 using StoreDAL.EF.Entities;
-using StoreDAL.Interfaces;
+using StoreDAL.EF.Interfaces;
 using StoreDTO;
 
 namespace StoreDAL.EF.DAL
 {
-    public class PriceHistoryDAL : BaseDAL<tblPriceHistory, PriceHistoryDTO>, IPriceHistoryDAL
+    public class PriceHistoryDAL : BaseDAL<tblPriceHistory>, IPriceHistoryDAL
     {
-        public PriceHistoryDAL(TradingCompanyContext context) : base(context)
+        public PriceHistoryDAL(TradingCompanyContext context) : base(context) { }
+
+        public PriceHistoryDTO Create(PriceHistoryDTO history)
         {
+            var entity = new tblPriceHistory
+            {
+                ProductId = history.ProductId,
+                OldPurchasePrice = history.OldPurchasePrice,
+                NewPurchasePrice = history.NewPurchasePrice,
+                OldSellingPrice = history.OldSellingPrice,
+                NewSellingPrice = history.NewSellingPrice
+            };
+            return ToDto(AddEntity(entity));
         }
 
-        protected override int GetId(PriceHistoryDTO dto) => dto.PriceHistoryId;
-
-        // новіші записи першими
-        protected override IQueryable<tblPriceHistory> ApplyOrder(IQueryable<tblPriceHistory> query)
-            => query.OrderByDescending(h => h.ChangedAt);
-
-        protected override PriceHistoryDTO ToDto(tblPriceHistory e) => new PriceHistoryDTO
+        public List<PriceHistoryDTO> GetAll()
         {
-            PriceHistoryId = e.PriceHistoryId,
-            ProductId = e.ProductId,
-            OldPurchasePrice = e.OldPurchasePrice,
-            NewPurchasePrice = e.NewPurchasePrice,
-            OldSellingPrice = e.OldSellingPrice,
-            NewSellingPrice = e.NewSellingPrice,
-            ChangedAt = e.ChangedAt
-        };
+            return GetAllEntities().Select(ToDto).ToList();
+        }
 
-        protected override tblPriceHistory ToEntity(PriceHistoryDTO dto) => new tblPriceHistory
+        public PriceHistoryDTO? GetById(int id)
         {
-            ProductId = dto.ProductId,
-            OldPurchasePrice = dto.OldPurchasePrice,
-            NewPurchasePrice = dto.NewPurchasePrice,
-            OldSellingPrice = dto.OldSellingPrice,
-            NewSellingPrice = dto.NewSellingPrice,
-            ChangedAt = dto.ChangedAt == default ? DateTime.Now : dto.ChangedAt
-        };
+            var entity = FindEntity(id);
+            return entity == null ? null : ToDto(entity);
+        }
 
-        protected override void CopyToEntity(PriceHistoryDTO dto, tblPriceHistory e)
+        public bool Update(PriceHistoryDTO history)
         {
-            e.ProductId = dto.ProductId;
-            e.OldPurchasePrice = dto.OldPurchasePrice;
-            e.NewPurchasePrice = dto.NewPurchasePrice;
-            e.OldSellingPrice = dto.OldSellingPrice;
-            e.NewSellingPrice = dto.NewSellingPrice;
-            e.ChangedAt = dto.ChangedAt;
+            var entity = FindEntity(history.PriceHistoryId);
+            if (entity == null) return false;
+
+            entity.ProductId = history.ProductId;
+            entity.OldPurchasePrice = history.OldPurchasePrice;
+            entity.NewPurchasePrice = history.NewPurchasePrice;
+            entity.OldSellingPrice = history.OldSellingPrice;
+            entity.NewSellingPrice = history.NewSellingPrice;
+            SaveChanges();
+            return true;
+        }
+
+        public bool Delete(int id)
+        {
+            return DeleteEntity(id);
+        }
+
+        private static PriceHistoryDTO ToDto(tblPriceHistory entity)
+        {
+            return new PriceHistoryDTO
+            {
+                PriceHistoryId = entity.PriceHistoryId,
+                ProductId = entity.ProductId,
+                OldPurchasePrice = entity.OldPurchasePrice,
+                NewPurchasePrice = entity.NewPurchasePrice,
+                OldSellingPrice = entity.OldSellingPrice,
+                NewSellingPrice = entity.NewSellingPrice,
+                RowInsertTime = entity.RowInsertTime
+            };
         }
     }
 }

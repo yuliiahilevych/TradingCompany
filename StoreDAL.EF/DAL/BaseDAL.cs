@@ -5,73 +5,48 @@ using StoreDAL.EF.Data;
 
 namespace StoreDAL.EF.DAL
 {
-    public abstract class BaseDAL<TEntity, TDto>
-        where TEntity : class
-        where TDto : class
+   
+    public abstract class BaseDAL<TEntity> where TEntity : class
     {
-        protected readonly TradingCompanyContext Context;
-
-        protected DbSet<TEntity> Set => Context.Set<TEntity>();
+        protected readonly TradingCompanyContext _context;
 
         protected BaseDAL(TradingCompanyContext context)
         {
-            Context = context;
+            _context = context;
         }
 
-        protected abstract TDto ToDto(TEntity entity);                    // entity -> DTO
-        protected abstract TEntity ToEntity(TDto dto);                    // DTO -> нова entity
-        protected abstract void CopyToEntity(TDto dto, TEntity entity);   // DTO -> наявна entity
-        protected abstract int GetId(TDto dto);                           // PK DTO
 
+        protected DbSet<TEntity> Table => _context.Set<TEntity>();
 
-        protected virtual IQueryable<TEntity> ApplyOrder(IQueryable<TEntity> query) => query;
-
-        protected virtual void BeforeUpdate(TEntity existing, TDto newValues) { }
-
-        
-
-        //
-        public virtual TDto Create(TDto dto)
+        protected TEntity AddEntity(TEntity entity)
         {
-            var entity = ToEntity(dto);
-            Set.Add(entity);
-            Context.SaveChanges();
-            return ToDto(entity);
+            Table.Add(entity);
+            _context.SaveChanges();
+            return entity;
         }
 
-        public virtual List<TDto> GetAll()
+        protected List<TEntity> GetAllEntities()
         {
-            return ApplyOrder(Set.AsNoTracking())
-                .ToList()
-                .Select(ToDto)
-                .ToList();
+            return Table.AsNoTracking().ToList();
         }
 
-        public virtual TDto? GetById(int id)
+        protected TEntity? FindEntity(int id)
         {
-            var entity = Set.Find(id);
-            return entity == null ? null : ToDto(entity);
+            return Table.Find(id);
         }
 
-        public virtual bool Update(TDto dto)
+        protected void SaveChanges()
         {
-            var entity = Set.Find(GetId(dto));
+            _context.SaveChanges();
+        }
+
+        protected bool DeleteEntity(int id)
+        {
+            var entity = Table.Find(id);
             if (entity == null) return false;
 
-            BeforeUpdate(entity, dto);   // бачить старі значення
-            CopyToEntity(dto, entity);   // потім переносимо нові значення
-
-            Context.SaveChanges();
-            return true;
-        }
-
-        public virtual bool Delete(int id)
-        {
-            var entity = Set.Find(id);
-            if (entity == null) return false;
-
-            Set.Remove(entity);
-            Context.SaveChanges();
+            Table.Remove(entity);
+            _context.SaveChanges();
             return true;
         }
     }

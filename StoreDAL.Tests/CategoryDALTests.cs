@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using StoreDAL.EF.DAL;
 using StoreDAL.EF.Data;
-using StoreDAL.Interfaces;
+using StoreDAL.EF.Interfaces;
 using StoreDTO;
 
 namespace StoreDAL.Tests
@@ -56,7 +56,6 @@ namespace StoreDAL.Tests
                 Assert.That(_context.tblCategory.Count(), Is.EqualTo(1));
             });
         }
-
 
         [TestCase(1)]
         [TestCase(3)]

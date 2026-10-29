@@ -16,6 +16,10 @@ public partial class TradingCompanyContext : DbContext
 
     public virtual DbSet<tblPriceHistory> tblPriceHistory { get; set; }
 
+    public virtual DbSet<tblRole> tblRole { get; set; }
+
+    public virtual DbSet<tblUser> tblUser { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<tblCategory>(entity =>
@@ -28,6 +32,7 @@ public partial class TradingCompanyContext : DbContext
 
             entity.Property(e => e.CategoryName).HasMaxLength(50);
             entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.RowInsertTime).HasDefaultValueSql("(sysdatetime())");
         });
 
         modelBuilder.Entity<tblProduct>(entity =>
@@ -41,8 +46,9 @@ public partial class TradingCompanyContext : DbContext
             entity.Property(e => e.ProductName).HasMaxLength(50);
             entity.Property(e => e.PurchasePrice).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.SellingPrice).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.RowInsertTime).HasDefaultValueSql("(sysdatetime())");
 
-            // зв'язок : багато товарів → одна категорія
+            // зв'язок: багато товарів → одна категорія
             entity.HasOne(p => p.Category)
                   .WithMany(c => c.Products)
                   .HasForeignKey(p => p.CategoryId)
@@ -60,7 +66,7 @@ public partial class TradingCompanyContext : DbContext
             entity.Property(e => e.NewPurchasePrice).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.OldSellingPrice).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.NewSellingPrice).HasColumnType("decimal(10, 2)");
-            entity.Property(e => e.ChangedAt).HasDefaultValueSql("(sysdatetime())");
+            entity.Property(e => e.RowInsertTime).HasDefaultValueSql("(sysdatetime())");
 
             // зв'язок: багато записів історії → один товар (видаляються разом із товаром)
             entity.HasOne(h => h.Product)
@@ -69,16 +75,37 @@ public partial class TradingCompanyContext : DbContext
                   .OnDelete(DeleteBehavior.Cascade)
                   .HasConstraintName("FK_tblPriceHistory_tblProduct");
         });
-    }
-    public override int SaveChanges()
-    {
-        foreach (var entry in ChangeTracker.Entries<tblProduct>())
+
+        modelBuilder.Entity<tblRole>(entity =>
         {
-            if (entry.State == EntityState.Added)
-                entry.Entity.RowInsertTime = DateTime.Now;
-            else if (entry.State == EntityState.Modified)
-                entry.Entity.RowUpdateTime = DateTime.Now;
-        }
-        return base.SaveChanges();
+            entity.ToTable("tblRole");
+
+            entity.HasKey(e => e.RoleId);
+
+            entity.HasIndex(e => e.RoleName).IsUnique();
+
+            entity.Property(e => e.RoleName).HasMaxLength(50);
+            entity.Property(e => e.RowInsertTime).HasDefaultValueSql("(sysdatetime())");
+        });
+
+        modelBuilder.Entity<tblUser>(entity =>
+        {
+            entity.ToTable("tblUser");
+
+            entity.HasKey(e => e.UserId);
+
+            entity.HasIndex(e => e.Login).IsUnique();
+
+            entity.Property(e => e.Login).HasMaxLength(50);
+            entity.Property(e => e.PasswordHash).HasMaxLength(32);
+            entity.Property(e => e.RowInsertTime).HasDefaultValueSql("(sysdatetime())");
+
+            // зв'язок: багато користувачів → одна роль
+            entity.HasOne(u => u.Role)
+                  .WithMany(r => r.Users)
+                  .HasForeignKey(u => u.RoleId)
+                  .OnDelete(DeleteBehavior.ClientSetNull)
+                  .HasConstraintName("FK_tblUser_tblRole");
+        });
     }
 }

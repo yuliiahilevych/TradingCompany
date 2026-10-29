@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using StoreDTO;
 
-namespace StoreDAL.Interfaces
+namespace StoreDAL.EF.Interfaces
 {
     public interface IPriceHistoryDAL
     {

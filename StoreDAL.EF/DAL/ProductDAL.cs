@@ -1,67 +1,74 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using StoreDAL.EF.Data;
 using StoreDAL.EF.Entities;
-using StoreDAL.Interfaces;
+using StoreDAL.EF.Interfaces;
 using StoreDTO;
 
 namespace StoreDAL.EF.DAL
 {
-    public class ProductDAL : BaseDAL<tblProduct, ProductDTO>, IProductDAL
+    public class ProductDAL : BaseDAL<tblProduct>, IProductDAL
     {
-        public ProductDAL(TradingCompanyContext context) : base(context)
+        public ProductDAL(TradingCompanyContext context) : base(context) { }
+
+        public ProductDTO Create(ProductDTO product)
         {
-        }
-
-        protected override int GetId(ProductDTO dto) => dto.ProductId;
-
-        protected override IQueryable<tblProduct> ApplyOrder(IQueryable<tblProduct> query)
-            => query.OrderBy(p => p.ProductId);
-
-        // якщо змінилась ціна, автоматично додаємо запис в історію цін
-        protected override void BeforeUpdate(tblProduct existing, ProductDTO newValues)
-        {
-            bool priceChanged = existing.PurchasePrice != newValues.PurchasePrice
-                             || existing.SellingPrice != newValues.SellingPrice;
-            if (!priceChanged) return;
-
-            Context.tblPriceHistory.Add(new tblPriceHistory
+            var entity = new tblProduct
             {
-                ProductId = existing.ProductId,
-                OldPurchasePrice = existing.PurchasePrice,   
-                NewPurchasePrice = newValues.PurchasePrice,  
-                OldSellingPrice = existing.SellingPrice,
-                NewSellingPrice = newValues.SellingPrice,
-                ChangedAt = DateTime.Now
-            });
+                ProductName = product.ProductName,
+                PurchasePrice = product.PurchasePrice,
+                SellingPrice = product.SellingPrice,
+                CategoryId = product.CategoryId,
+                IsBlocked = product.IsBlocked
+            };
+            return ToDto(AddEntity(entity));
         }
 
-        protected override ProductDTO ToDto(tblProduct e) => new ProductDTO
+        public List<ProductDTO> GetAll()
         {
-            ProductId = e.ProductId,
-            ProductName = e.ProductName,
-            PurchasePrice = e.PurchasePrice,
-            SellingPrice = e.SellingPrice,
-            CategoryId = e.CategoryId,
-            IsBlocked = e.IsBlocked
-        };
+            return GetAllEntities().Select(ToDto).ToList();
+        }
 
-        protected override tblProduct ToEntity(ProductDTO dto) => new tblProduct
+        public ProductDTO? GetById(int id)
         {
-            ProductName = dto.ProductName,
-            PurchasePrice = dto.PurchasePrice,
-            SellingPrice = dto.SellingPrice,
-            CategoryId = dto.CategoryId,
-            IsBlocked = dto.IsBlocked
-        };
+            var entity = FindEntity(id);
+            return entity == null ? null : ToDto(entity);
+        }
 
-        protected override void CopyToEntity(ProductDTO dto, tblProduct e)
+        public bool Update(ProductDTO product)
         {
-            e.ProductName = dto.ProductName;
-            e.PurchasePrice = dto.PurchasePrice;
-            e.SellingPrice = dto.SellingPrice;
-            e.CategoryId = dto.CategoryId;
-            e.IsBlocked = dto.IsBlocked;
+            var entity = FindEntity(product.ProductId);
+            if (entity == null) return false;
+
+            entity.ProductName = product.ProductName;
+            entity.PurchasePrice = product.PurchasePrice;
+            entity.SellingPrice = product.SellingPrice;
+            entity.CategoryId = product.CategoryId;
+            entity.IsBlocked = product.IsBlocked;
+            entity.RowUpdateTime = DateTime.Now;
+            SaveChanges();
+            return true;
+        }
+
+        public bool Delete(int id)
+        {
+            return DeleteEntity(id);
+        }
+
+        private static ProductDTO ToDto(tblProduct entity)
+        {
+            return new ProductDTO
+            {
+                ProductId = entity.ProductId,
+                ProductName = entity.ProductName,
+                PurchasePrice = entity.PurchasePrice,
+                SellingPrice = entity.SellingPrice,
+                CategoryId = entity.CategoryId,
+                IsBlocked = entity.IsBlocked,
+                RowInsertTime = entity.RowInsertTime,
+                RowUpdateTime = entity.RowUpdateTime
+            };
         }
     }
 }
